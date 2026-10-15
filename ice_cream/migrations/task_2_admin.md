@@ -8,39 +8,45 @@ from django.contrib.auth.models import Group
 
 from .models import Category, Location, Post
 
+try:
+    admin.site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'is_published')
+    list_display = ('title', 'slug', 'is_published', 'created_at')
     list_editable = ('is_published',)
-    search_fields = ('title',)
+    search_fields = ('title', 'slug')
+    list_filter = ('is_published',)
+    prepopulated_fields = {'slug': ('title',)}
 
 
 @admin.register(Location)
 class LocationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'is_published')
+    list_display = ('name', 'is_published', 'created_at')
     list_editable = ('is_published',)
     search_fields = ('name',)
+    list_filter = ('is_published',)
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = (
-        'title', 'author', 'category', 'location', 'pub_date', 'is_published',
+        'title', 'author', 'category', 'pub_date',
+        'is_published', 'created_at'
     )
     list_editable = ('is_published',)
-    search_fields = ('title',)
-    list_filter = ('category', 'location', 'is_published')
-
-
-if admin.site.is_registered(Group):
-    admin.site.unregister(Group)
+    search_fields = ('title', 'text')
+    list_filter = ('is_published', 'category', 'location')
+    date_hierarchy = 'pub_date'
 ```
 
 ## Изменения в `django_control_point_1\project_blog_02\project_blog_02\settings.py`
 
 ```python
-LANGUAGE_CODE = 'ru-RU'   # было 'en-EN'
+LANGUAGE_CODE = 'ru-RU'      # было 'en-EN'
 TIME_ZONE = 'Europe/Moscow'  # было 'US/Eastern'
 ```
 
@@ -49,12 +55,14 @@ TIME_ZONE = 'Europe/Moscow'  # было 'US/Eastern'
 ## Что сделано и почему
 
 - **Регистрация моделей** через декоратор `@admin.register` — современный способ, вместо `admin.site.register`.
-- **`list_display`** — какие колонки видны в списке объектов.
-- **`list_editable`** — галочку «Опубликовано» можно менять прямо в списке, не заходя в объект.
-- **`search_fields`** — поиск по названию категории/локации/поста.
-- **`list_filter`** — фильтр постов по категории, локации и статусу публикации.
-- **Отключение `Group`** — по ТЗ «лишние модели отключите (кроме USER)». Защищённая проверка `is_registered` нужна, потому что `django_control_point_1\project_blog_02\blog\admin.py` импортируется раньше, чем загрузится админка `auth` (иначе `NotRegistered`).
-- **`LANGUAGE_CODE = 'ru-RU'`** — весь интерфейс админки переключается на русский.
+- **try/except** для отключения `Group` — `blog/admin.py` импортируется раньше, чем загрузится админка `auth`.
+- **list_display** — какие колонки видны в списке объектов (включая `created_at`).
+- **list_editable** — галочку «Опубликовано» можно менять прямо в списке.
+- **search_fields** — поиск по названию (и slug для категории, text для поста).
+- **list_filter** — фильтр по статусу публикации, категории, локации.
+- **prepopulated_fields** — slug автоматически заполняется из title при создании категории.
+- **date_hierarchy** — навигация по датам в списке постов.
+- **LANGUAGE_CODE = 'ru-RU'** — весь интерфейс админки на русском.
 
 ## Проверка
 

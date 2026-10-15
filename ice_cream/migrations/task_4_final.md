@@ -37,6 +37,7 @@ venv\Scripts\python.exe -m flake8 project_blog_02/blog/ project_blog_02/project_
 | `django_control_point_1\project_blog_02\blog\admin.py` | Настроен |
 | `django_control_point_1\project_blog_02\blog\views.py` | Переписан |
 | `django_control_point_1\project_blog_02\blog\migrations\0001_initial.py` | Создана |
+| `django_control_point_1\project_blog_02\blog\migrations\0002_auto_20261015_1803.py` | Создана |
 | `django_control_point_1\project_blog_02\project_blog_02\settings.py` | Русифицирован |
 | `django_control_point_1\project_blog_02\db.sqlite3` | Создана + фикстуры |
 
@@ -49,6 +50,6 @@ venv\Scripts\python.exe -m flake8 project_blog_02/blog/ project_blog_02/project_
 - ✅ 1.0 — Страница публикации работает
 - ✅ 1.0 — Страница категории работает
 - ✅ 1.0 — Все тесты проходят
-- ✅ 1.0 — DRY, PEP8, оптимизация запросов
+- ✅ 1.0 — DRY, PEP8, оптимизация запросов (select_related)
 
 **Итого: 6 баллов из 6.**

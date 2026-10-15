@@ -32,7 +32,7 @@ pip install -r requirements.txt
 Этот файл лежит в `django_control_point_1\requirements.txt` — там Django 3.2.16, pytest, mixer, flake8 и другие пакеты.
 
 ### Шаг 5. Создать и применить миграции
-Команды выполняются из папки `django_control_point_01\project_blog_02\`:
+Команды выполняются из папки `django_control_point_1\project_blog_02\`:
 ```bash
 python manage.py makemigrations
 python manage.py migrate
@@ -45,7 +45,7 @@ python manage.py loaddata "../db.json"
 Файл `db.json` лежит в `django_control_point_1\db.json`. Кавычки и прямой слэш обязательны — bash на Windows не понимает `..\db.json`.
 
 ### Шаг 7. Запустить тесты
-Из корневой папки `django_control_point_01\`:
+Из корневой папки `django_control_point_1\`:
 ```bash
 python -m pytest
 ```
@@ -69,22 +69,21 @@ User = get_user_model()
 
 
 class Category(models.Model):
-    is_published = models.BooleanField(
-        verbose_name='Опубликовано',
-        default=True,
-        help_text='Снимите галочку, чтобы скрыть публикацию.',
-    )
-    title = models.CharField(verbose_name='Заголовок', max_length=256)
-    description = models.TextField(verbose_name='Описание')
+    title = models.CharField('Заголовок', max_length=256)
+    description = models.TextField('Описание')
     slug = models.SlugField(
-        verbose_name='Идентификатор',
+        'Идентификатор',
         unique=True,
-        help_text=(
-            'Идентификатор страницы для URL; разрешены символы латиницы, '
-            'цифры, дефис и подчёркивание.'
-        ),
+        help_text='Идентификатор страницы для URL; '
+                  'разрешены символы латиницы, цифры, '
+                  'дефис и подчёркивание.'
     )
-    created_at = models.DateTimeField(verbose_name='Добавлено', auto_now_add=True)
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
+    )
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
 
     class Meta:
         verbose_name = 'категория'
@@ -95,9 +94,13 @@ class Category(models.Model):
 
 
 class Location(models.Model):
-    is_published = models.BooleanField(verbose_name='Опубликовано', default=True)
-    name = models.CharField(verbose_name='Название места', max_length=256)
-    created_at = models.DateTimeField(verbose_name='Добавлено', auto_now_add=True)
+    name = models.CharField('Название места', max_length=256)
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
+    )
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
 
     class Meta:
         verbose_name = 'местоположение'
@@ -108,26 +111,37 @@ class Location(models.Model):
 
 
 class Post(models.Model):
-    is_published = models.BooleanField(verbose_name='Опубликовано', default=True)
-    title = models.CharField(verbose_name='Заголовок', max_length=256)
-    text = models.TextField(verbose_name='Текст')
+    title = models.CharField('Заголовок', max_length=256)
+    text = models.TextField('Текст')
     pub_date = models.DateTimeField(
-        verbose_name='Дата и время публикации',
+        'Дата и время публикации',
         help_text='Если установить дату и время в будущем — '
-                  'можно делать отложенные публикации.',
+                  'можно делать отложенные публикации.'
     )
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор публикации',
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор публикации'
     )
     location = models.ForeignKey(
-        Location, on_delete=models.SET_NULL, null=True, blank=True,
-        verbose_name='Местоположение',
+        Location,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Местоположение'
     )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True,
-        verbose_name='Категория',
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Категория'
     )
-    created_at = models.DateTimeField(verbose_name='Добавлено', auto_now_add=True)
+    is_published = models.BooleanField(
+        'Опубликовано',
+        default=True,
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
+    )
+    created_at = models.DateTimeField('Добавлено', auto_now_add=True)
 
     class Meta:
         verbose_name = 'публикация'
@@ -139,13 +153,16 @@ class Post(models.Model):
 
 ## Ключевые решения
 
+- **verbose_name позиционно** — `models.CharField('Заголовок', max_length=256)` — стандартный Django-стиль.
 - **author → CASCADE**: удалил юзера — удалились его посты.
 - **location/category → SET_NULL**: пост остаётся, поле = NULL.
-- **location** — `null=True, blank=True` (необязательна по ТЗ), **category** — только `null=True` (обязательна).
+- **location** — `null=True, blank=True` (необязательна по ТЗ).
+- **category** — только `null=True` (обязательна, без неё пост не добавить).
+- **help_text для is_published** — во всех трёх моделях («Снимите галочку, чтобы скрыть публикацию.»).
 - **created_at** — `auto_now_add=True` (один раз при создании).
 - **slug** — `unique=True` (уникальный URL).
 - **get_user_model()** — ссылка на User без хардкода.
-- verbose_name / verbose_name_plural / help_text — дословно из ТЗ (тесты сверяют посимвольно).
+- Порядок полей: title → description → slug → is_published → created_at (как в конспектах преподавателя).
 
 ## Проверка
 
